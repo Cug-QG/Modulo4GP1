@@ -1,10 +1,13 @@
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class Player : Entity
 {
     [Header("Player Settings")]
     [SerializeField] float speed;
     [SerializeField] float sprintSpeed;
+
+    [SerializeField] Transform gun;
 
     Rigidbody rb;
     Camera mainCamera;
@@ -21,9 +24,18 @@ public class Player : Entity
         Move(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
     }
 
-    private void Update()
+    protected override void Update()
     {
+        base.Update();
         Rotate();
+        Shoot(Input.GetMouseButton(0));
+    }
+
+    private void Shoot(bool input)
+    {
+        if (!input || !enableShoot || !IsAlive) return;
+        enableShoot = false;
+        Instantiate(projectilePrefab, firePoint.position, gun.rotation);
     }
 
     private void Move(float inputX, float inputZ)
@@ -40,19 +52,25 @@ public class Player : Entity
     private void Rotate()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero); // piano orizzontale
+        Plane groundPlane = new(Vector3.up, Vector3.zero); // piano orizzontale
 
         if (groundPlane.Raycast(ray, out float enter))
         {
             Vector3 hitPoint = ray.GetPoint(enter);
-            Vector3 direction = hitPoint - transform.position;
-            direction.y = 0f; // mantieni solo rotazione orizzontale
+            RotateTransform(hitPoint, transform);
+            RotateTransform(hitPoint, gun);
+        }
+    }
 
-            if (direction != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = targetRotation;
-            }
+    private void RotateTransform(Vector3 hitPoint, Transform toRotate)
+    {
+        Vector3 direction = (hitPoint - toRotate.position).normalized;
+        direction.y = 0f; // mantieni solo rotazione orizzontale
+
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            toRotate.rotation = targetRotation;
         }
     }
 }

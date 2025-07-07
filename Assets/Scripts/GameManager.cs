@@ -19,6 +19,9 @@ public class GameManager : MonoBehaviour
         else { instance = this; }
     }
 
+    [SerializeField] Transform playerBase;
+    [SerializeField] Transform enemyBase;
+
     public void Respawn(Transform item, float delay)
     {
         StartCoroutine(RespawnRoutine(item, delay));
@@ -29,5 +32,22 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         item.gameObject.SetActive(true);
+    }
+
+    public Transform GetBaseByTag(string tag)
+    {
+        if (tag == "Player")
+        {
+            return playerBase;
+        }
+        else if (tag == "Enemy")
+        {
+            return enemyBase;
+        }
+        else
+        {
+            Debug.LogError("Invalid tag provided: " + tag);
+            return null;
+        }
     }
 }

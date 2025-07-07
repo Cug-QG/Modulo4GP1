@@ -7,13 +7,39 @@ public abstract class Entity : MonoBehaviour
     float currentHealth;
     [SerializeField] private float respawnCooldown = 3f;
 
+    [SerializeField] protected Projectile projectilePrefab;
+    [SerializeField] protected Transform firePoint;
+    [SerializeField] private float fireRate = 3f;
+    float fireCooldown;
+    protected bool enableShoot = true;
+
     public bool IsAlive => currentHealth > 0;
     public bool CanHeal => IsAlive && currentHealth < maxHealth;
 
     protected virtual void Start()
     {
-        currentHealth = maxHealth - 50;
+        currentHealth = maxHealth;
+        fireCooldown = 1 / fireRate;
+        transform.position = GameManager.Instance.GetBaseByTag(tag).position;
     }
+
+    protected virtual void Update()
+    {
+        Cooldown();
+    }
+
+    private void Cooldown()
+    {
+        if (enableShoot) return;
+        fireCooldown -= Time.deltaTime;
+
+        if (fireCooldown <= 0f)
+        {
+            enableShoot = true;
+            fireCooldown = 1 / fireRate;
+        }
+    }
+
 
     public void TakeDamage(float damage)
     {
@@ -38,16 +64,13 @@ public abstract class Entity : MonoBehaviour
 
     private void HandleDeath()
     {
+        transform.position = GameManager.Instance.GetBaseByTag(tag).position;
+        GameManager.Instance.Respawn(transform, respawnCooldown);
         gameObject.SetActive(false);
-        StartCoroutine(RespawnCoroutine());
     }
 
-    private IEnumerator RespawnCoroutine()
+    private void OnEnable()
     {
-        yield return new WaitForSeconds(respawnCooldown);
-
-        //transform.position = respawnPoint.position;
         currentHealth = maxHealth;
-        gameObject.SetActive(true);
     }
 }
