@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI playerScoreText;
     [SerializeField] TextMeshProUGUI enemyScoreText;
+    [SerializeField] TextMeshProUGUI captureInfo;
 
     public void SetCaptureScore(float score, TagsEnum tag)
     {
@@ -34,5 +35,10 @@ public class UIManager : MonoBehaviour
                 enemyScoreText.text = (int)(score * 100) + "%";
                 break;
         }
+    }
+
+    public void SetCaptureInfo(string name, float info)
+    {
+        captureInfo.text = name + " " + (int)(info * 100) + "%";
     }
 }

@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] Transform playerBase;
     [SerializeField] Transform enemyBase;
+    [SerializeField] CaptureZone captureZone;
+    [SerializeField] Transform[] healPoints;
 
     public void Respawn(Transform item, float delay)
     {
@@ -49,5 +51,26 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Invalid tag provided: " + tag);
             return null;
         }
+    }
+
+    public CaptureZone GetCaptureZone()
+    {
+        return captureZone;
+    }
+
+    public Transform GetNearestHealPoint(Vector3 position)
+    {
+        Transform nearest = null;
+        float minDistance = float.MaxValue;
+        foreach (Transform healPoint in healPoints)
+        {
+            float distance = Vector3.Distance(position, healPoint.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearest = healPoint;
+            }
+        }
+        return nearest;
     }
 }

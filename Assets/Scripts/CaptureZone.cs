@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CaptureZone : MonoBehaviour
@@ -7,12 +7,16 @@ public class CaptureZone : MonoBehaviour
     [Header("Capture Zone Settings")]
     [SerializeField] float captureRadius = 5f;
     [SerializeField] float captureTime = 5f;
+    [SerializeField] float dominiumTime = 5f;
     [SerializeField] float sphereRadius;
 
     float enemyCaptureProgress = 0f;
     float playerCaptureProgress = 0f;
     public List<Transform> entities = new();
-    TagsEnum dominant;
+    TagsEnum? contender;
+    TagsEnum? dominant;
+    float captureProgress = 0f;
+    bool isPaused = false;
 
     [Header("Visual settings")]
     [SerializeField] float planeY = 0.1f;
@@ -36,8 +40,9 @@ public class CaptureZone : MonoBehaviour
         Draw();
 
         RemoveNullTargets();
-        if (entities.Count == 0) return;
+        //if (entities.Count == 0) return;
         CaptureZoneProgress();
+        TakeControl();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -45,7 +50,6 @@ public class CaptureZone : MonoBehaviour
         if (other.CompareTag(Tags.Enemy) || other.CompareTag(Tags.Player))
         {
             entities.Add(other.transform);
-            CheckIfDominant();
         }
     }
 
@@ -54,33 +58,83 @@ public class CaptureZone : MonoBehaviour
         if (other.CompareTag(Tags.Enemy) || other.CompareTag(Tags.Player))
         {
             entities.Remove(other.transform);
-            CheckIfDominant();
         }
     }
 
     private void RemoveNullTargets()
     {
         entities.RemoveAll(target => !target.gameObject.activeSelf);
+        CheckIfDominant();
     }
 
     private void CheckIfDominant()
     {
-        TagsEnum entityTag = entities[0].CompareTag("Player") ? TagsEnum.Player : TagsEnum.Enemy;
+        if (entities.Count == 0)
+        {
+            if (contender != null) previousContender = contender;
+            contender = null;
+            return;
+        }
 
-        if (entities.Count == 1) dominant = entityTag;
+        TagsEnum entityTag = entities[0].CompareTag("Player") ? TagsEnum.Player : TagsEnum.Enemy;
 
         string firstTag = entities[0].tag;
 
         foreach (Transform entity in entities)
         {
-            if (!entity.CompareTag(firstTag)) { return; }
+            if (!entity.CompareTag(firstTag)) { isPaused = true; return; }
         }
 
-        dominant = entityTag;
+        //contender = entityTag;
+        SetDominant(entityTag);
+    }
+
+    TagsEnum? previousContender;
+
+    void SetDominant(TagsEnum input)
+    {
+        isPaused = false;
+        if (dominant == input) return;
+        if (contender == input) return;
+        contender = input;
+    }
+
+    void TakeControl()
+    {
+        if (contender != null && !entities.Any(entity => entity.CompareTag(contender.ToString())))
+        {
+            captureProgress = Mathf.Max(0, captureProgress - Time.deltaTime);
+            UIManager.Instance.SetCaptureInfo(contender.ToString(), captureProgress / dominiumTime);
+            return;
+        }
+        if (captureProgress > 0 && previousContender != contender)
+        {
+            if (isPaused)
+            {
+                return;
+            }
+            captureProgress = Mathf.Max(0, captureProgress - Time.deltaTime);
+            UIManager.Instance.SetCaptureInfo(previousContender.ToString(), captureProgress / dominiumTime);
+            return;
+        }
+        if (contender != null) previousContender = contender;
+        if (0 <= captureProgress && captureProgress < dominiumTime)
+        {
+            if (isPaused)
+            {
+                return;
+            }
+            captureProgress = contender == null ? Mathf.Max(0, captureProgress - Time.deltaTime) : captureProgress + Time.deltaTime;
+            string contenderString = contender == null ? previousContender.ToString() : contender.ToString();
+            UIManager.Instance.SetCaptureInfo(contenderString, captureProgress / dominiumTime);
+            return;
+        }
+        if (captureProgress > dominiumTime) { dominant = contender; captureProgress = 0; contender = null; }
     }
 
     private void CaptureZoneProgress()
     {
+        if (entities.Count == 0) { return; }
         switch (dominant)
         {
             case TagsEnum.Enemy:
@@ -94,6 +148,11 @@ public class CaptureZone : MonoBehaviour
 
     private void HandleCapture(ref float progress, TagsEnum tag)
     {
+        if (!entities.Any(entity => entity.CompareTag(tag.ToString())))
+        {
+            return;
+        }
+
         progress = Mathf.Min(progress + Time.deltaTime, captureTime);
         UIManager.Instance.SetCaptureScore(progress / captureTime, tag);
 
@@ -124,5 +183,10 @@ public class CaptureZone : MonoBehaviour
             Vector3 point = circleCenter + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * contactRadius;
             lr.SetPosition(i, point);
         }
+    }
+
+    public bool IsThereAnEntityInZone(TagsEnum tag)
+    {
+        return entities.Any(entity => entity.CompareTag(tag.ToString()));
     }
 }

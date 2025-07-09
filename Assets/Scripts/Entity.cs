@@ -4,7 +4,7 @@ using UnityEngine;
 public abstract class Entity : MonoBehaviour
 {
     [SerializeField] private float maxHealth = 100f;
-    float currentHealth;
+    protected float currentHealth;
     [SerializeField] private float respawnCooldown = 3f;
 
     [SerializeField] protected Projectile projectilePrefab;
