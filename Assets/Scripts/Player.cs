@@ -7,7 +7,7 @@ public class Player : Entity
     [SerializeField] float speed;
     [SerializeField] float sprintSpeed;
 
-    [SerializeField] Transform gun;
+    
 
     Rigidbody rb;
     Camera mainCamera;

@@ -6,12 +6,15 @@ public abstract class Entity : MonoBehaviour
     [SerializeField] private float maxHealth = 100f;
     protected float currentHealth;
     [SerializeField] private float respawnCooldown = 3f;
-
+    [SerializeField] protected Transform gun;
     [SerializeField] protected Projectile projectilePrefab;
     [SerializeField] protected Transform firePoint;
     [SerializeField] private float fireRate = 3f;
     float fireCooldown;
     protected bool enableShoot = true;
+
+    [SerializeField] LifeBar lifeBarPrefab;
+    LifeBar lifeBar;
 
     public bool IsAlive => currentHealth > 0;
     public bool CanHeal => IsAlive && currentHealth < maxHealth;
@@ -20,6 +23,7 @@ public abstract class Entity : MonoBehaviour
     {
         currentHealth = maxHealth;
         fireCooldown = 1 / fireRate;
+        lifeBar = CanvasManager.Instance.SpawnLifeBar(transform, lifeBarPrefab);
         transform.position = GameManager.Instance.GetBaseByTag(tag).position;
     }
 
@@ -46,6 +50,10 @@ public abstract class Entity : MonoBehaviour
         if (!IsAlive) return;
 
         currentHealth = Mathf.Max(0, currentHealth - damage);
+        if (lifeBar != null)
+        {
+            lifeBar.UpdateLifeBar(currentHealth / maxHealth);
+        }
         //OnHealthChanged?.Invoke(currentHealth);
 
         if (currentHealth <= 0)
@@ -59,6 +67,10 @@ public abstract class Entity : MonoBehaviour
         if (!IsAlive) return;
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        if (lifeBar != null)
+        {
+            lifeBar.UpdateLifeBar(currentHealth / maxHealth);
+        }
         //OnHealthChanged?.Invoke(currentHealth);
     }
 
@@ -72,5 +84,9 @@ public abstract class Entity : MonoBehaviour
     protected virtual void OnEnable()
     {
         currentHealth = maxHealth;
+        if (lifeBar != null)
+        {
+            lifeBar.UpdateLifeBar(currentHealth / maxHealth);
+        }
     }
 }
