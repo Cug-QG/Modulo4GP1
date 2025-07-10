@@ -189,4 +189,19 @@ public class CaptureZone : MonoBehaviour
     {
         return entities.Any(entity => entity.CompareTag(tag.ToString()));
     }
+
+    public bool IsThereSpecificEntityInZone(Transform entity)
+    {
+        return entities.Any(e => e == entity);
+    }
+
+    public float HowManyEntitiesInZone(TagsEnum tag)
+    {
+        return entities.Count(entity => entity.CompareTag(tag.ToString()));
+    }
+
+    public float GetCaptureRadius()
+    {
+        return captureRadius;
+    }
 }

@@ -58,12 +58,13 @@ public class GameManager : MonoBehaviour
         return captureZone;
     }
 
-    public Transform GetNearestHealPoint(Vector3 position)
+    public Vector3 GetNearestHealPoint(Vector3 position)
     {
         Transform nearest = null;
         float minDistance = float.MaxValue;
         foreach (Transform healPoint in healPoints)
         {
+            if (!healPoint.gameObject.activeSelf) continue;
             float distance = Vector3.Distance(position, healPoint.position);
             if (distance < minDistance)
             {
@@ -71,6 +72,11 @@ public class GameManager : MonoBehaviour
                 nearest = healPoint;
             }
         }
-        return nearest;
+        return nearest == null ? position : nearest.position;
+    }
+
+    public Transform GetPlayer()
+    {
+        return GameObject.FindGameObjectWithTag("Player").transform;
     }
 }

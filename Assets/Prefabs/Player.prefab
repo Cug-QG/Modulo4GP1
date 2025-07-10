@@ -101,7 +101,7 @@ MonoBehaviour:
   respawnCooldown: 3
   projectilePrefab: {fileID: 259994583848611421, guid: c50c022de89f93d45be547adf8ae449a, type: 3}
   firePoint: {fileID: 3403075437090271022}
-  fireRate: 3
+  fireRate: 5
   speed: 5
   sprintSpeed: 10
   gun: {fileID: 2286606227258949974}

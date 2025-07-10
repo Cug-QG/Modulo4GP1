@@ -1,45 +1,70 @@
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Scripting.APIUpdating;
 
 public class Enemy : Entity
 {
-    [SerializeField] float hpLimitToHeal = 20f; // Limite di salute per decidere se curarsi
-    [SerializeField] float probabilityToGoHeal = 0.1f; // Probabilità di andare a curarsi
+    [Header("Enemy Settings")]
+    [SerializeField] float HPLimit = 50f;
+    [SerializeField] float probabilityToHeal = 0.5f;
 
-    CaptureZone captureZone;
+    TagsEnum tagEnum = TagsEnum.Enemy;
+    Transform player;
     NavMeshAgent agent;
-    Vector3 target;
+    State currentState;
+    CaptureZone captureZone;
+    float radius;
 
     protected override void Start()
     {
         base.Start();
-        captureZone = GameManager.Instance.GetCaptureZone();
+        player = GameManager.Instance.GetPlayer();
         agent = GetComponent<NavMeshAgent>();
+        captureZone = GameManager.Instance.GetCaptureZone();
+        radius = captureZone.GetCaptureRadius();
+        currentState = new Goal(gameObject, agent, player);
     }
 
     protected override void Update()
     {
         base.Update();
         AlwaysToCheck();
-        Move();
-    }
-
-    private void Move()
-    {
-        if (target == null) return;
-        agent.SetDestination(target);
+        currentState = currentState.Process();
     }
 
     void AlwaysToCheck()
     {
-        if (!captureZone.IsThereAnEntityInZone(TagsEnum.Enemy))
+        if (currentState.name != State.STATE.GOAL && !captureZone.IsThereAnEntityInZone(tagEnum))
         {
-            target = captureZone.transform.position;
+            currentState = new Goal(gameObject, agent, player);
         }
-        else if (currentHealth <= hpLimitToHeal && Random.value < probabilityToGoHeal)
+    }
+
+    public override void Heal(float amount)
+    {
+        base.Heal(amount);
+        if (TryHeal()) { currentState = new Heal(gameObject, agent, player); return; }
+        currentState = new Goal(gameObject, agent, player);
+    }
+
+    public override void TakeDamage(float damage)
+    {
+        base.TakeDamage(damage);
+        if (TryHeal()) currentState = new Heal(gameObject, agent, player);
+    }
+
+    bool TryHeal()
+    {
+        if (captureZone.HowManyEntitiesInZone(tagEnum) < 2) return false;
+        if (IsAlive && currentHealth < HPLimit && Random.value < probabilityToHeal)
         {
-            target = GameManager.Instance.GetNearestHealPoint(transform.position).position;
+            return true;
         }
+        return false;
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        currentState = new Goal(gameObject, agent, player);
     }
 }

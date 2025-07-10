@@ -41,7 +41,7 @@ public abstract class Entity : MonoBehaviour
     }
 
 
-    public void TakeDamage(float damage)
+    public virtual void TakeDamage(float damage)
     {
         if (!IsAlive) return;
 
@@ -54,7 +54,7 @@ public abstract class Entity : MonoBehaviour
         }
     }
 
-    public void Heal(float amount)
+    public virtual void Heal(float amount)
     {
         if (!IsAlive) return;
 
@@ -69,7 +69,7 @@ public abstract class Entity : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         currentHealth = maxHealth;
     }
