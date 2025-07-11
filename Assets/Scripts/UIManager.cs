@@ -23,6 +23,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI playerScoreText;
     [SerializeField] TextMeshProUGUI enemyScoreText;
     [SerializeField] TextMeshProUGUI captureInfo;
+    [SerializeField] GameObject gameOverMenu;
+    [SerializeField] TextMeshProUGUI gameOverText;
 
     public void SetCaptureScore(float score, TagsEnum tag)
     {
@@ -40,5 +42,14 @@ public class UIManager : MonoBehaviour
     public void SetCaptureInfo(string name, float info)
     {
         captureInfo.text = name + " " + (int)(info * 100) + "%";
+    }
+
+    public void ToggleGameOverMenu(bool toggle)
+    {
+        gameOverMenu.SetActive(toggle);
+    }
+    public void SetGameOverText(string text)
+    {
+        gameOverText.text = text;
     }
 }

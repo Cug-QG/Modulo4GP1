@@ -47,12 +47,11 @@ public class Enemy : Entity
     void Shoot()
     {
         if (!enableShoot || !IsAlive) return;
-
-        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        
+        /*Vector3 directionToPlayer = (player.position - firePoint.position).normalized;
         float angle = Vector3.Angle(firePoint.up, directionToPlayer);
-
-        if (angle > 15f) return;
-
+        if (angle > 15f) return;*/
+        
         enableShoot = false;
         Instantiate(projectilePrefab, firePoint.position, gun.rotation);
     }

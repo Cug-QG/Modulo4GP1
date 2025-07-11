@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,6 +24,41 @@ public class GameManager : MonoBehaviour
     [SerializeField] Transform enemyBase;
     [SerializeField] CaptureZone captureZone;
     [SerializeField] Transform[] healPoints;
+
+    public bool playing;
+
+    private void Start()
+    {
+        PauseGame();
+    }
+
+    public void PauseGame()
+    {
+        playing = false;
+        Time.timeScale = 0;
+    }
+
+    public void ResumeGame()
+    {
+        Time.timeScale = 1;
+        playing = true;
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
+    public void GameOver()
+    {
+        PauseGame();
+        UIManager.Instance.ToggleGameOverMenu(true);
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
 
     public void Respawn(Transform item, float delay)
     {

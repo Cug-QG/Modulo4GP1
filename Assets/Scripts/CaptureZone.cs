@@ -158,7 +158,9 @@ public class CaptureZone : MonoBehaviour
 
         if (progress >= captureTime)
         {
-            Debug.Log(tag + " captured the zone!");
+            GameManager.Instance.GameOver();
+            string message = tag == TagsEnum.Enemy ? "You Lose!" : "You Win!";
+            UIManager.Instance.SetGameOverText(message);
         }
     }
 
@@ -203,5 +205,10 @@ public class CaptureZone : MonoBehaviour
     public float GetCaptureRadius()
     {
         return captureRadius;
+    }
+
+    public TagsEnum? GetDominant()
+    {
+        return dominant;
     }
 }

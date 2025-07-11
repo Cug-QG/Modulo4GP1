@@ -5,7 +5,7 @@ public class State
 {
     public enum STATE
     {
-        GOAL, CAPTUR, HEAL
+        GOAL, PATROL, HEAL, HIDE, CHASE
     }
 
     public enum EVENT
